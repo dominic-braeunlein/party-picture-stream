@@ -36,7 +36,7 @@ app.configure(function () {
     app.use(multer({
         dest: path.join(__dirname, "static/uploads"),
         rename: function (fieldname, filename) {
-            return new Date().toISOString().substring(0, 20).replace(/:/g,"-") +
+            return new Date().toISOString().substring(0, 19).replace(/:/g,"-") +
                 path.extname(filename);
         }
     }));
