@@ -3,49 +3,52 @@ $(function () {
     var
         displayTime = 5000,  // time to display one image
         splitScreens = 1,  // number of parallel displayed images
-        maxSplitScreens = 4,  // maximum number of parallel displayed images
+        maxSplitScreens = 1,  // maximum number of parallel displayed images
         minDisplayTime = 2000,  // minimal time to display one image
-        maxDisplayDelay = 1500;  // max time until new images should be loaded from the server
+        maxDisplayDelay = 10000;  // max time until new images should be loaded from the server
 
     // stores the images to display
     var images = [];
 
-
     // adjusts display settings to the current workload
     function adjustDisplaySettings(screens) {
-        // compute the required display time
-        neededDisplayTime = (maxDisplayDelay * screens) / images.length;
-        console.log('display time has to be set to ' + neededDisplayTime + ' (assuming ' + screens + ' screens)');
+        if(images.length > 0) {
+            // compute the required display time
+            neededDisplayTime = (maxDisplayDelay * screens) / images.length;
+            console.log('display time has to be set to ' + neededDisplayTime + ' (assuming ' + screens + ' screens)');
 
-        // if the required speed of the images changing is higher than the limit, then more screens are needed
-        if(minDisplayTime > neededDisplayTime) {
+            // if the required speed of the images changing is higher than the limit, then more screens are needed
+            if(minDisplayTime > neededDisplayTime) {
 
-            if(screens * 2 > maxSplitScreens) {
-                console.log('cant use more screens, setting everything as fast as possible');
-                console.log('setting display time to ' + minDisplayTime);
-                console.log('setting number of screens to ' + screens);
-                splitScreens = screens;
-                displayTime = minDisplayTime;
+                if(screens * 2 > maxSplitScreens) {
+                    console.log('cant use more screens, setting everything as fast as possible');
+                    console.log('setting display time to ' + minDisplayTime);
+                    console.log('setting number of screens to ' + screens);
+                    splitScreens = screens;
+                    displayTime = minDisplayTime;
+                } else {
+                    adjustDisplaySettings(screens * 2);
+                    return;
+                }
             } else {
-                adjustDisplaySettings(screens * 2);
-                return;
+                console.log('setting display time to ' + neededDisplayTime);
+                console.log('setting number of screens to ' + screens);
+                displayTime = neededDisplayTime;
+                splitScreens = screens;
             }
-        } else {
-            console.log('setting display time to ' + neededDisplayTime);
-            console.log('setting number of screens to ' + screens);
-            displayTime = neededDisplayTime;
-            splitScreens = screens;
         }
     }
 
     // adjusts the page layout to the global parameters (paramters get changed by adjustDisplaySettings)
     function adjustPageLayout() {
-        console.log('adjusting page layout');
-        $("#images").empty();
+        if(images.length > 0) {
+            console.log('adjusting page layout');
+            $("#images").empty();
 
-        for(var i = 0; i < splitScreens; i++) {
-            var code = '<div id=img' + i + '></div>';
-            $("#images").append(code);
+            for(var i = 0; i < splitScreens; i++) {
+                var code = '<div id=img' + i + '></div>';
+                $("#images").append(code);
+            }
         }
     }
 
@@ -55,7 +58,6 @@ $(function () {
             var img = new Image();
             img.onload = function () {
                 var elem = "#img" + id;
-                console.log(elem);
                 $(elem).empty();
                 $(elem).append(img);
             };
@@ -77,16 +79,10 @@ $(function () {
                 loadImage(i, images[0]);
                 images.splice(0, 1);
             }
-            clearInterval(intervalId);
 
         } else {
             // get new images from the server
             getImages();
-
-            // if there were images at the server, draw the first one right away
-            if(images.length > 0) {
-                display();
-            }
         }
     }
 
@@ -101,10 +97,10 @@ $(function () {
             var resJson = JSON.parse(xhr.responseText);
             images = resJson['images'];
 
+            console.log('got ' + images.length + ' new images');
             // adjust the display settings to display the images
             adjustDisplaySettings(1);
             adjustPageLayout();
-
         };
         xhr.onerror = function() {
             console.log("couldn't load /api/image");
