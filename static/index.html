@@ -1,0 +1,73 @@
+<html>
+<head>
+    <title>Upload Example</title>
+    <style type="text/css" media="screen">
+        .wrapper {
+            width: 100%;
+
+        }
+        #progress {
+            width: 100%;
+            border: 1px solid black;
+            position: relative;
+            padding: 3px;
+            margin: auto;
+        }
+
+        #percent {
+            position: absolute;
+            left: 50%;
+            margin: auto;
+        }
+        #status {
+            margin: auto;
+        }
+
+        #bar {
+            height: 20px;
+            background-color: #23a75b;
+            width: 0%;
+        }
+        div.upload {
+            margin-left: auto;
+            margin-right: auto;
+            width: 400px;
+            height: 150px;
+            background: url(images/upload_btn.png);
+            overflow: hidden;
+        }
+
+        div.upload input {
+            display: block !important;
+            width: 400px !important;
+            height: 150px !important;
+            opacity: 0 !important;
+            overflow: hidden !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <form id="uploadForm"
+              enctype="multipart/form-data"
+              action="/api/upload"
+              method="post">
+            <div class="upload">
+                <input type="file" id="userFileInput" name="userFile" accept="image/*"/>
+            </div>
+        </form>
+</div>
+<div class="wrapper">
+    <div id="statuswrapper">
+        <span id="status"></span>
+    </div>
+    <div id="progress">
+        <span id="percent">0%</span>
+
+        <div id="bar"></div>
+    </div>
+</div>
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="./js/upload.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+build
+dist
+.DS_Store
+Gemfile.lock
+node_modules/
+.env
+.grunt-cache
+npm-debug.log
