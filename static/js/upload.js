@@ -14,7 +14,7 @@ $(function () {
 
         if (!this.value) return;
 
-        status('Uploading 0%.');
+        status('Uploading.');
 
         var formData = new FormData();
         var file = document.getElementById('userFileInput').files[0];
@@ -28,8 +28,6 @@ $(function () {
                 var percent = Math.round((e.loaded / e.total) * 100);
                 if (percent == 100) {
                     status('Processing.');
-                } else {
-                    status('Uploading ' + percent + '.');
                 }
                 setProgress(percent);
             }
