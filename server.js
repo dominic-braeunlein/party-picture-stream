@@ -8,7 +8,7 @@ var express = require('express'),
 var allowedExtensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp'];
 var baseFolder = path.join(__dirname, "static");
 
-var lastImage, s3client;
+var images = [], s3client;
 
 if (process.env.S3_ACCESS && process.env.S3_SECRET && process.env.S3_BUCKET) {
     s3client = knox.createClient({
@@ -59,19 +59,23 @@ app.post('/api/upload', function (req, res) {
                 res.send(500);
                 console.error(err);
             } else {
-                lastImage = s3res.req.url;
+                var lastImage = s3res.req.url;
+                images.push(lastImage);
                 res.send({ file: lastImage });
-                console.log("Uploaded", lastImage);
+                console.log("Stored", images);
             }
         });
     } else {
-        lastImage = path.relative(baseFolder, req.files.userFile.path);
+        var lastImage = path.relative(baseFolder, req.files.userFile.path);
+        images.push(lastImage)
         res.send({ file: lastImage });
+        console.log("Stored", images);
     }
 });
 
 app.get('/api/image', function (req, res) {
-    res.send({ lastImage: lastImage });
+    res.send({ images: images });
+    images = [];
 });
 
 var server = app.listen(3000, function () {
