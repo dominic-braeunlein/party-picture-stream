@@ -34,6 +34,9 @@ $(function () {
     var timer = setInterval(main, displayTime);
     // start the main function right away manually to not waste time
     main();
+    // stores the images to display
+    var images = [];
+    var lastRequest;
 
     // adjusts display settings to the current workload
     function adjustDisplaySettings(screens) {
@@ -72,7 +75,6 @@ $(function () {
     function adjustPageLayout() {
         if(images.length > 0) {
             $("#images").empty();
-            console.log('\tnumper of screens: ' + splitScreens);
             for(var i = 0; i < splitScreens; i++) {
                 var code = '<div id=img' + i + '></div>';
                 $("#images").append(code);
@@ -110,20 +112,23 @@ $(function () {
 
     // pulls new images from the server
     function getImages() {
-        var xhr = new XMLHttpRequest();
-        xhr.overrideMimeType('application/json');
-        xhr.open('get', '/api/image', true);
-        xhr.onload = function () {
-            $('#userFileInput').val('');
-
-            var resJson = JSON.parse(xhr.responseText);
+        var url;
+        if (lastRequest) {
+            url = '/api/image?from=' + lastRequest;
+        } else {
+            url = '/api/image';
+        }
+        $.ajax({
+            url : url,
+            dataType : 'json'
+        }).then(function (resJson) {
             images = resJson['images'];
-
             console.log('\tgot ' + images.length + ' new images');
 
             // if no images get pulled, the interval will not be cleared and try to pull again after a while
             // hopefully there are images then since always seeing the same image is quiet boring :(
             if(images.length > 0) {
+                lastRequest = new Date().toISOString().substring(0, 19).replace(/:/g, "-");
                 console.log('adjusing display settings...');
                 adjustDisplaySettings();
                 console.log('adjusing page layout...');
@@ -133,12 +138,9 @@ $(function () {
                 timer = setInterval(main, displayTime);
                 renderNextImages();
             }
-        };
-        xhr.onerror = function() {
+        }, function () {
             console.log("couldn't load /api/image");
-        };
-        xhr.send();
-        return;
+        });
     };
 
     // starts the control flow

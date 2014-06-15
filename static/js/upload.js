@@ -1,6 +1,20 @@
 $(function () {
     status('Choose a file.');
 
+    var queue = [];
+    var currentUploadCounter = 0;
+
+    $("body").on("drop", function (event) {
+        event.stopPropagation();
+        event.preventDefault();
+        var files = event.originalEvent.dataTransfer.files;
+        for (var i = 0; i < files.length; i++)
+            queueFile(files[i]);
+    }).on("dragenter dragover", function (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    });
+
     $("#upload-button").click(function () {
         $("#userFileInput").click();
     });
@@ -10,40 +24,65 @@ $(function () {
         $('#bar').css('width', percent + '%');
     }
 
+    function queueFile(file) {
+        if (file) {
+            queue.push(file);
+        }
+        if (currentUploadCounter === 0 && queue.length > 0) {
+            var upload = queue.shift();
+            currentUploadCounter++;
+            uploadFile(upload).always(function () {
+                currentUploadCounter--;
+                queueFile();
+            });
+        }
+    }
+
+    function uploadFile(file) {
+
+        var formData = new FormData();
+        formData.append('userFile', file);
+
+        return $.ajax({
+            xhr : function () {
+                var xhr = $.ajaxSettings.xhr();
+                xhr.upload.onprogress = function (e) {
+                    if (e.lengthComputable) {
+                        var percent = Math.round((e.loaded / e.total) * 100);
+                        if (percent == 100) {
+                            status('Processing.');
+                        }
+                        setProgress(percent);
+                    }
+                };
+                return xhr;
+            },
+            url: '/api/upload',
+            type: "POST",
+            contentType: false,
+            processData: false,
+            data: formData,
+            dataType: "json"
+        }).fail(function (e) {
+            status('Error while uploading.');
+        }).done(function (resJson) {
+            setProgress(0);
+            status('Choose a new file.');
+            if (resJson.image) {
+                $('<div>')
+                    .css({ backgroundImage : 'url(' + resJson.image + ')' })
+                    .prependTo('#photostream');
+            }
+        });
+    }
+
     $("#userFileInput").change(function () {
 
         if (!this.value) return;
 
         status('Uploading.');
+        queueFile(document.getElementById('userFileInput').files[0]);
 
-        var formData = new FormData();
-        var file = document.getElementById('userFileInput').files[0];
-        formData.append('userFile', file);
-
-        var xhr = new XMLHttpRequest();
-        xhr.overrideMimeType('application/json');
-        xhr.open('post', '/api/upload', true);
-        xhr.upload.onprogress = function (e) {
-            if (e.lengthComputable) {
-                var percent = Math.round((e.loaded / e.total) * 100);
-                if (percent == 100) {
-                    status('Processing.');
-                }
-                setProgress(percent);
-            }
-        };
-        xhr.onerror = function (e) {
-            status('Error while uploading.');
-        };
-        xhr.onload = function () {
-            setProgress(0);
-            var resJson = JSON.parse(xhr.responseText);
-            status('Uploaded ' + resJson.image + '. Choose a new file.');
-            if (resJson.image) {
-                window.open('./uploads/' + resJson.image, 'upload', 'status=1, height = 300, width = 300, resizable = 0');
-            }
-        };
-        xhr.send(formData);
     });
     function status(message) {
         $('#status').text(message);
