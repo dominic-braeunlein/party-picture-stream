@@ -36,7 +36,7 @@ app.configure(function () {
     app.use(multer({
         dest: path.join(__dirname, "static/uploads"),
         rename: function (fieldname, filename) {
-            return new Date().toISOString().substring(0, 19).replace(/:/g,"-") +
+            return new Date().toISOString().substring(0, 20).replace(/:/g,"-") +
                 path.extname(filename);
         }
     }));
@@ -61,21 +61,28 @@ app.post('/api/upload', function (req, res) {
             } else {
                 var lastImage = s3res.req.url;
                 images.push(lastImage);
-                res.send({ file: lastImage });
+                res.send({ image: lastImage });
                 console.log("Stored", images);
             }
         });
     } else {
         var lastImage = path.relative(baseFolder, req.files.userFile.path);
         images.push(lastImage)
-        res.send({ file: lastImage });
+        res.send({ image: lastImage });
         console.log("Stored", images);
     }
 });
 
 app.get('/api/image', function (req, res) {
-    res.send({ images: images });
-    images = [];
+    if (req.query.from) {
+        res.send({
+            images: images.filter(function (image) {
+                return path.basename(image) > req.query.from;
+            })
+        });
+    } else {
+        res.send({ images: images });
+    }
 });
 
 var server = app.listen(3000, function () {

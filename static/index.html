@@ -9,8 +9,9 @@
             box-sizing: border-box;
         }
         .wrapper {
-            width: 100%;
-
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 600px;
         }
         #progress {
             width: 100%;
@@ -34,32 +35,35 @@
             background-color: #23a75b;
             width: 0%;
         }
-        div.upload {
+        #upload-button {
             margin-left: auto;
             margin-right: auto;
-            width: 400px;
+            max-width: 400px;
             height: 150px;
-            background: url(images/upload_btn.png);
-            overflow: hidden;
+            line-height: 150px;
+            font-size: 60px;
+            color: #fff;
+            background-color: #2dcc70;
+            text-align: center;
+            border-bottom: 5px solid #23a75b;
+            border-radius: 3px;
+        }
+        #upload-button:active {
+            border-bottom-width: 2px;
+            background-color: #28be69;
         }
 
-        div.upload input {
-            display: block !important;
-            width: 400px !important;
-            height: 150px !important;
-            opacity: 0 !important;
-            overflow: hidden !important;
+        #userFileInput {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="wrapper">
-        <form id="uploadForm"
-              enctype="multipart/form-data"
-              action="/api/upload"
-              method="post">
-            <div class="upload">
-                <input type="file" id="userFileInput" name="userFile" accept="image/*"/>
+        <form id="uploadForm">
+            <input type="file" id="userFileInput" name="userFile" accept="image/*"/>
+            <div id="upload-button">
+                Upload
             </div>
         </form>
 </div>

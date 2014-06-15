@@ -1,50 +1,51 @@
 $(function () {
-    status('choose a file');
-    var timerId;
+    status('Choose a file.');
 
-    function setTimer() {
-        timerId = setInterval(function () {
-            if ($('#userFileInput').val() !== '') {
-                clearInterval(timerId);
-                $('#uploadForm').submit();
-            }
-        }, 500);
-    }
+    $("#upload-button").click(function () {
+        $("#userFileInput").click();
+    });
 
     function setProgress(percent) {
         $('#percent').html(percent + '%');
         $('#bar').css('width', percent + '%');
     }
 
-    setTimer();
-    $('#uploadForm').submit(function () {
-        status('0%');
+    $("#userFileInput").change(function () {
+
+        if (!this.value) return;
+
+        status('Uploading 0%.');
+
         var formData = new FormData();
         var file = document.getElementById('userFileInput').files[0];
         formData.append('userFile', file);
+
         var xhr = new XMLHttpRequest();
         xhr.overrideMimeType('application/json');
         xhr.open('post', '/api/upload', true);
         xhr.upload.onprogress = function (e) {
-            if (e.lengthComputable)
-                setProgress(Math.round((e.loaded / e.total) * 100));
+            if (e.lengthComputable) {
+                var percent = Math.round((e.loaded / e.total) * 100);
+                if (percent == 100) {
+                    status('Processing.');
+                } else {
+                    status('Uploading ' + percent + '.');
+                }
+                setProgress(percent);
+            }
         };
         xhr.onerror = function (e) {
-            status('error while trying to upload');
+            status('Error while uploading.');
         };
         xhr.onload = function () {
-            $('#userFileInput').val('');
             setProgress(0);
             var resJson = JSON.parse(xhr.responseText);
-            status(resJson.file + ' done, choose a file');
-            setTimer();
-            if (resJson.image)
-                window.open('./uploads/' + resJson.savedAs, 'upload', 'status=1, height = 300, width = 300, resizable = 0');
-            else
-                console.log('not an image');
+            status('Uploaded ' + resJson.image + '. Choose a new file.');
+            if (resJson.image) {
+                window.open('./uploads/' + resJson.image, 'upload', 'status=1, height = 300, width = 300, resizable = 0');
+            }
         };
         xhr.send(formData);
-        return false; // no refresh
     });
     function status(message) {
         $('#status').text(message);
