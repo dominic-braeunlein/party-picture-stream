@@ -3,8 +3,6 @@
 ## Description
 This snippet let's your party guests take pictures with their phones and upload them to the server. The newest picture gets displayed on the viewer/projector.
 
-Idea from [Michael Bräunlein](https://github.com/mbraeunlein?tab=repositories)
-
 Code based on this example [https://github.com/jonjenkins/express-upload](https://github.com/jonjenkins/express-upload)
 
 
