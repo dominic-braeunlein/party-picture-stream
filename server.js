@@ -1,11 +1,11 @@
 var express = require('express'),
     app = express(),
-    multer = require('multer')
+    multer = require('multer');
 
 var imgs = ['png', 'jpg', 'jpeg', 'gif', 'bmp'];
 var baseFolder = "/static";
 
-var lastImage;
+var images = [];
 
 function getExtension(fn) {
     return fn.split('.').pop();
@@ -31,8 +31,9 @@ app.configure(function () {
 app.post('/api/upload', function (req, res) {
     console.log("upload start");
     if (imgs.indexOf(getExtension(req.files.userFile.name)) != -1) {
-        lastImage = req.files.userFile.path.substring(baseFolder.length);
-        console.log(lastImage);
+        images.push(req.files.userFile.path.substring(baseFolder.length));
+
+        console.log(images);
     }
 
     res.send({file: req.files.userFile.name});
@@ -40,7 +41,8 @@ app.post('/api/upload', function (req, res) {
 });
 
 app.get('/api/image', function (req, res) {
-    res.send({lastImage: lastImage});
+    res.send({images: images});
+    images = [];
 });
 
 var server = app.listen(3000, function () {
