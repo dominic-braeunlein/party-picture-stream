@@ -1,18 +1,20 @@
 {
-    "name": "party-picture-stream",
-    "author": {
-        "name" : "Dominic Bräunlein",
-        "email" : "dominic.braeunlein@googlemail.com",
-        "url" : "https://github.com/dominic-braeunlein"
-    },
-    "description": "Upload your pictures during a party and get them displayed live on a projector",
-    "version": "0.0.1",
-    "engines": {
-        "node": ">= 0.10.x"
-    },
-    "private": true,
-    "dependencies": {
-        "express": "3.x",
-        "multer": "0.x"
-    }
+  "name": "party-picture-stream",
+  "author": {
+    "name": "Dominic Bräunlein",
+    "email": "dominic.braeunlein@googlemail.com",
+    "url": "https://github.com/dominic-braeunlein"
+  },
+  "description": "Upload your pictures during a party and get them displayed live on a projector",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">= 0.10.x"
+  },
+  "private": true,
+  "dependencies": {
+    "async": "^0.9.0",
+    "express": "3.x",
+    "knox": "^0.9.0",
+    "multer": "0.x"
+  }
 }

@@ -1,11 +1,25 @@
 var express = require('express'),
     app = express(),
-    multer = require('multer')
+    knox = require('knox'),
+    fs = require('fs'),
+    path = require('path'),
+    multer = require('multer');
 
-var imgs = ['png', 'jpg', 'jpeg', 'gif', 'bmp'];
-var baseFolder = "/static";
+var allowedExtensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp'];
+var baseFolder = path.join(__dirname, "static");
 
-var lastImage;
+var lastImage, s3client;
+
+if (process.env.S3_ACCESS && process.env.S3_SECRET && process.env.S3_BUCKET) {
+    s3client = knox.createClient({
+      key : process.env.S3_ACCESS,
+      secret : process.env.S3_SECRET,
+      bucket : process.env.S3_BUCKET,
+      region : process.env.S3_REGION
+    });
+} else {
+    console.log("S3 support disabled. Please provide S3_SECRET, S3_ACCESS and S3_BUCKET as environment variable.")
+}
 
 function getExtension(fn) {
     return fn.split('.').pop();
@@ -20,27 +34,44 @@ function fnAppend(fn, insert) {
 
 app.configure(function () {
     app.use(multer({
-        dest: './static/uploads/',
+        dest: path.join(__dirname, "static/uploads"),
         rename: function (fieldname, filename) {
-            return filename.replace(/\W+/g, '-').toLowerCase();
+            return new Date().toISOString().substring(0, 19).replace(/:/g,"-") +
+                path.extname(filename);
         }
     }));
-    app.use(express.static(__dirname + baseFolder));
+    app.use(express.static(baseFolder));
 });
 
 app.post('/api/upload', function (req, res) {
+
+    var filename = path.basename(req.files.userFile.path);
+
     console.log("upload start");
-    if (imgs.indexOf(getExtension(req.files.userFile.name)) != -1) {
-        lastImage = req.files.userFile.path.substring(baseFolder.length);
-        console.log(lastImage);
+    if (allowedExtensions.indexOf(getExtension(req.files.userFile.name)) == -1) {
+        res.send(400);
+        return;
     }
 
-    res.send({file: req.files.userFile.name});
-
+    if (s3client) {
+        s3client.putFile(req.files.userFile.path, "/" + filename, { 'x-amz-acl': 'public-read' }, function (err, s3res) {
+            if (err) {
+                res.send(500);
+                console.error(err);
+            } else {
+                lastImage = s3res.req.url;
+                res.send({ file: lastImage });
+                console.log("Uploaded", lastImage);
+            }
+        });
+    } else {
+        lastImage = path.relative(baseFolder, req.files.userFile.path);
+        res.send({ file: lastImage });
+    }
 });
 
 app.get('/api/image', function (req, res) {
-    res.send({lastImage: lastImage});
+    res.send({ lastImage: lastImage });
 });
 
 var server = app.listen(3000, function () {
