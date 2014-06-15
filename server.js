@@ -8,7 +8,7 @@ var express = require('express'),
 var allowedExtensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp'];
 var baseFolder = path.join(__dirname, "static");
 
-var images = [], s3client;
+var images = [], s3client, counter = 0;
 
 if (process.env.S3_ACCESS && process.env.S3_SECRET && process.env.S3_BUCKET) {
     s3client = knox.createClient({
@@ -37,7 +37,8 @@ app.configure(function () {
         dest: path.join(__dirname, "static/uploads"),
         rename: function (fieldname, filename) {
             return new Date().toISOString().substring(0, 19).replace(/:/g, "-") +
-                path.extname(filename);
+                path.extname(filename) +
+                '-' + counter++;
         }
     }));
     app.use(express.static(baseFolder));
@@ -77,7 +78,7 @@ app.get('/api/image', function (req, res) {
     if (req.query.from) {
         res.send({
             images: images.filter(function (image) {
-                return path.basename(image) > req.query.from;
+                return path.basename(image).substring(0, 19) > req.query.from;
             })
         });
     } else {

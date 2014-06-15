@@ -1,6 +1,17 @@
 $(function () {
     status('Choose a file.');
 
+    $("body").on("drop", function (event) {
+        event.stopPropagation();
+        event.preventDefault();
+        var files = event.originalEvent.dataTransfer.files;
+        for (var i = 0; i < files.length; i++)
+            uploadFile(files[i]);
+    }).on("dragenter dragover", function (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    });
+
     $("#upload-button").click(function () {
         $("#userFileInput").click();
     });
@@ -10,14 +21,9 @@ $(function () {
         $('#bar').css('width', percent + '%');
     }
 
-    $("#userFileInput").change(function () {
-
-        if (!this.value) return;
-
-        status('Uploading.');
+    function uploadFile(file) {
 
         var formData = new FormData();
-        var file = document.getElementById('userFileInput').files[0];
         formData.append('userFile', file);
 
         var xhr = new XMLHttpRequest();
@@ -46,6 +52,15 @@ $(function () {
             }
         };
         xhr.send(formData);
+    }
+
+    $("#userFileInput").change(function () {
+
+        if (!this.value) return;
+
+        status('Uploading.');
+        uploadFile(document.getElementById('userFileInput').files[0]);
+
     });
     function status(message) {
         $('#status').text(message);
