@@ -58,6 +58,14 @@
         #userFileInput {
             display: none;
         }
+        #photostream div {
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 200px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -68,17 +76,17 @@
                 Upload
             </div>
         </form>
-</div>
-<div class="wrapper">
-    <div id="statuswrapper">
-        <span id="status"></span>
     </div>
-    <div id="progress">
-        <span id="percent">0%</span>
-
-        <div id="bar"></div>
+    <div class="wrapper">
+        <div id="statuswrapper">
+            <span id="status"></span>
+        </div>
+        <div id="progress">
+            <span id="percent">0%</span>
+            <div id="bar"></div>
+        </div>
     </div>
-</div>
+    <div id="photostream" class="wrapper"></div>
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="./js/upload.js"></script>
 </body>

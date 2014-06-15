@@ -40,7 +40,9 @@ $(function () {
             var resJson = JSON.parse(xhr.responseText);
             status('Uploaded ' + resJson.image + '. Choose a new file.');
             if (resJson.image) {
-                window.open('./uploads/' + resJson.image, 'upload', 'status=1, height = 300, width = 300, resizable = 0');
+                $('<div>')
+                    .css({ backgroundImage : 'url(' + resJson.image + ')' })
+                    .prependTo('#photostream');
             }
         };
         xhr.send(formData);
