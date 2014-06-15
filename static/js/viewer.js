@@ -9,6 +9,7 @@ $(function () {
 
     // stores the images to display
     var images = [];
+    var lastRequest;
 
     // adjusts display settings to the current workload
     function adjustDisplaySettings(screens) {
@@ -88,25 +89,28 @@ $(function () {
 
     // pulls new images from the server
     function getImages() {
-        var xhr = new XMLHttpRequest();
-        xhr.overrideMimeType('application/json');
-        xhr.open('get', '/api/image', true);
-        xhr.onload = function () {
-            $('#userFileInput').val('');
-
-            var resJson = JSON.parse(xhr.responseText);
+        var url;
+        if (lastRequest) {
+            url = '/api/image?from=' + lastRequest;
+        } else {
+            url = '/api/image';
+        }
+        $.ajax({
+            url : url,
+            dataType : 'json'
+        }).then(function (resJson) {
             images = resJson['images'];
+
+            lastRequest = new Date().toISOString().substring(0, 19).replace(/:/g, "-");
 
             console.log('got ' + images.length + ' new images');
             // adjust the display settings to display the images
             adjustDisplaySettings(1);
             adjustPageLayout();
-        };
-        xhr.onerror = function() {
+
+        }, function () {
             console.log("couldn't load /api/image");
-        };
-        xhr.send();
-        return;
+        });
     };
 
     // script execution starts here
