@@ -42,6 +42,7 @@ $(function () {
 
         var formData = new FormData();
         formData.append('userFile', file);
+        console.log(file);
 
         return $.ajax({
             xhr : function () {

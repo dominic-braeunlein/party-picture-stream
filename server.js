@@ -3,7 +3,8 @@ var express = require('express'),
     knox = require('knox'),
     fs = require('fs'),
     path = require('path'),
-    multer = require('multer');
+    multer = require('multer'),
+    config = require('nconf');
 
 var allowedExtensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp'];
 var baseFolder = path.join(__dirname, "static");
@@ -32,6 +33,9 @@ function fnAppend(fn, insert) {
     return arr + '.' + insert + '.' + ext;
 }
 
+app.set('views', __dirname + '/views');
+app.engine('html', require('ejs').renderFile);
+
 app.configure(function () {
     app.use(multer({
         dest: path.join(__dirname, "static/uploads"),
@@ -45,6 +49,8 @@ app.configure(function () {
 });
 
 app.post('/api/upload', function (req, res) {
+
+	console.log("bla " + config.server);
 
     var filename = path.basename(req.files.userFile.path);
 
@@ -84,6 +90,14 @@ app.get('/api/image', function (req, res) {
     } else {
         res.send({ images: images });
     }
+});
+
+app.get('/', function(req, res){
+  res.render('index.html');
+});
+
+app.get('/view', function(req, res){
+  res.render('viewer.html');
 });
 
 var server = app.listen(3000, function () {
